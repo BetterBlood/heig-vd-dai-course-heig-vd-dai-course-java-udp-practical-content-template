@@ -1,0 +1,100 @@
+networks:
+  my-isolated-network:
+    name: my-isolated-network-name
+
+services:
+  unicast-emitter:
+    image: java-udp-programming
+    command:
+      - unicast-emitter
+      - --host=unicast-receiver-1
+      - --port=9876
+      - --delay=0
+      - --frequency=5000
+
+  broadcast-emitter:
+    image: java-udp-programming
+    command:
+      - broadcast-emitter
+      - --host=255.255.255.255
+      - --port=9876
+      - --delay=5000
+      - --frequency=30000
+    networks:
+      - my-isolated-network
+
+  multicast-emitter:
+    image: java-udp-programming
+    command:
+      - multicast-emitter
+      - --host=239.1.1.1
+      - --port=9876
+      - --delay=10000
+      - --frequency=15000
+      - -i=eth0
+
+  unicast-receiver-1:
+    image: java-udp-programming
+    command:
+      - unicast-receiver
+      - --port=9876
+    depends_on:
+      - unicast-emitter
+
+  unicast-receiver-2:
+    image: java-udp-programming
+    command:
+      - unicast-receiver
+      - --port=9876
+    depends_on:
+      - unicast-emitter
+
+  broadcast-receiver-1:
+    image: java-udp-programming
+    command:
+      - broadcast-receiver
+      - --port=9876
+    depends_on:
+      - broadcast-emitter
+    networks:
+      - my-isolated-network
+
+  broadcast-receiver-2:
+    image: java-udp-programming
+    command:
+      - broadcast-receiver
+      - --port=9876
+    depends_on:
+      - broadcast-emitter
+    networks:
+      - my-isolated-network
+
+  multicast-receiver-1:
+    image: java-udp-programming
+    command:
+      - multicast-receiver
+      - --host=239.1.1.1
+      - --port=9876
+      - -i=eth0
+    depends_on:
+      - multicast-emitter
+
+  multicast-receiver-2:
+    image: java-udp-programming
+    command:
+      - multicast-receiver
+      - --host=239.1.1.1
+      - --port=9876
+      - -i=eth0
+    depends_on:
+      - multicast-emitter
+
+  multicast-receiver-3:
+    image: java-udp-programming
+    command:
+      - multicast-receiver
+      - --host=239.1.1.1
+      - --port=9876
+      - -i=eth0
+    depends_on:
+      - multicast-emitter
